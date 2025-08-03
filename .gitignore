@@ -351,3 +351,4 @@ web/static/*.png
 
 # Local VSCode project settings
 .vscode/
+nul
