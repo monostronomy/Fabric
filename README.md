@@ -3,7 +3,7 @@ Fabric is graciously supported by…
 
 [![Github Repo Tagline](https://github.com/user-attachments/assets/96ab3d81-9b13-4df4-ba09-75dee7a5c3d2)](https://warp.dev/fabric)
 
-<img src="./images/fabric-logo-gif.gif" alt="fabriclogo" width="400" height="400"/>
+<img src="./docs/images/fabric-logo-gif.gif" alt="fabriclogo" width="400" height="400"/>
 
 # `fabric`
 
@@ -29,7 +29,7 @@ Fabric is graciously supported by…
 [Helper Apps](#helper-apps) •
 [Meta](#meta)
 
-![Screenshot of fabric](images/fabric-summarize.png)
+![Screenshot of fabric](./docs/images/fabric-summarize.png)
 
 </div>
 
@@ -93,6 +93,9 @@ Keep in mind that many of these were recorded when Fabric was Python-based, so r
   - [Just use the Patterns](#just-use-the-patterns)
     - [Prompt Strategies](#prompt-strategies)
   - [Custom Patterns](#custom-patterns)
+    - [Setting Up Custom Patterns](#setting-up-custom-patterns)
+    - [Using Custom Patterns](#using-custom-patterns)
+    - [How It Works](#how-it-works)
   - [Helper Apps](#helper-apps)
     - [`to_pdf`](#to_pdf)
     - [`to_pdf` Installation](#to_pdf-installation)
@@ -110,32 +113,9 @@ Keep in mind that many of these were recorded when Fabric was Python-based, so r
 
 ## Updates
 
-> [!NOTE]
->
-> July 4, 2025
->
-> - Fabric now supports web search using the `--search` and `--search-location` flags
-> - Web search is available for both Anthropic and OpenAI providers
-> - Previous plugin-level search configurations have been removed in favor of the new flag-based approach.
-> - If you used the previous approach, consider cleaning up your `~/.config/fabric/.env` file, removing the unused `ANTHROPIC_WEB_SEARCH_TOOL_ENABLED` and `ANTHROPIC_WEB_SEARCH_TOOL_LOCATION` variables.
-> - Fabric now supports image generation using the `--image-file` flag with OpenAI models
-> - Image generation works with both text prompts and input images (via `--attachment`) for image editing tasks
->
->
->June 17, 2025
->
->- Fabric now supports Perplexity AI. Configure it by using `fabric -S` to add your Perplexity AI API Key,
->   and then try:
->
->   ```bash
->   fabric -m sonar-pro "What is the latest world news?"
->   ```
->
->June 11, 2025
->
->- Fabric's YouTube transcription now needs `yt-dlp` to be installed. Make sure to install the latest
-> version (2025.06.09 as of this note). The YouTube API key is only needed for comments (the `--comments` flag)
-> and metadata extraction (the `--metadata` flag).
+Fabric is evolving rapidly.
+
+Stay current with the latest features by reviewing the [CHANGELOG](./CHANGELOG.md) for all recent changes.
 
 ## Philosophy
 
@@ -217,7 +197,7 @@ To install Fabric, [make sure Go is installed](https://go.dev/doc/install), and 
 
 ```bash
 # Install Fabric directly from the repo
-go install github.com/danielmiessler/fabric@latest
+go install github.com/danielmiessler/fabric/cmd/fabric@latest
 ```
 
 ### Environment Variables
@@ -292,88 +272,88 @@ yt() {
 
 You can add the below code for the equivalent aliases inside PowerShell by running `notepad $PROFILE` inside a PowerShell window:
 
-    ```powershell
-    # Path to the patterns directory
-    $patternsPath = Join-Path $HOME ".config/fabric/patterns"
-    foreach ($patternDir in Get-ChildItem -Path $patternsPath -Directory) {
-        $patternName = $patternDir.Name
+```powershell
+# Path to the patterns directory
+$patternsPath = Join-Path $HOME ".config/fabric/patterns"
+foreach ($patternDir in Get-ChildItem -Path $patternsPath -Directory) {
+    $patternName = $patternDir.Name
 
-        # Dynamically define a function for each pattern
-        $functionDefinition = @"
-    function $patternName {
-        [CmdletBinding()]
-        param(
-            [Parameter(ValueFromPipeline = `$true)]
-            [string] `$InputObject,
+    # Dynamically define a function for each pattern
+    $functionDefinition = @"
+function $patternName {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = `$true)]
+        [string] `$InputObject,
 
-            [Parameter(ValueFromRemainingArguments = `$true)]
-            [String[]] `$patternArgs
-        )
+        [Parameter(ValueFromRemainingArguments = `$true)]
+        [String[]] `$patternArgs
+    )
 
-        begin {
-            # Initialize an array to collect pipeline input
-            `$collector = @()
-        }
-
-        process {
-            # Collect pipeline input objects
-            if (`$InputObject) {
-                `$collector += `$InputObject
-            }
-        }
-
-        end {
-            # Join all pipeline input into a single string, separated by newlines
-            `$pipelineContent = `$collector -join "`n"
-
-            # If there's pipeline input, include it in the call to fabric
-            if (`$pipelineContent) {
-                `$pipelineContent | fabric --pattern $patternName `$patternArgs
-            } else {
-                # No pipeline input; just call fabric with the additional args
-                fabric --pattern $patternName `$patternArgs
-            }
-        }
-    }
-    "@
-        # Add the function to the current session
-        Invoke-Expression $functionDefinition
+    begin {
+        # Initialize an array to collect pipeline input
+        `$collector = @()
     }
 
-    # Define the 'yt' function as well
-    function yt {
-        [CmdletBinding()]
-        param(
-            [Parameter()]
-            [Alias("timestamps")]
-            [switch]$t,
-
-            [Parameter(Position = 0, ValueFromPipeline = $true)]
-            [string]$videoLink
-        )
-
-        begin {
-            $transcriptFlag = "--transcript"
-            if ($t) {
-                $transcriptFlag = "--transcript-with-timestamps"
-            }
-        }
-
-        process {
-            if (-not $videoLink) {
-                Write-Error "Usage: yt [-t | --timestamps] youtube-link"
-                return
-            }
-        }
-
-        end {
-            if ($videoLink) {
-                # Execute and allow output to flow through the pipeline
-                fabric -y $videoLink $transcriptFlag
-            }
+    process {
+        # Collect pipeline input objects
+        if (`$InputObject) {
+            `$collector += `$InputObject
         }
     }
-    ```
+
+    end {
+        # Join all pipeline input into a single string, separated by newlines
+        `$pipelineContent = `$collector -join "`n"
+
+        # If there's pipeline input, include it in the call to fabric
+        if (`$pipelineContent) {
+            `$pipelineContent | fabric --pattern $patternName `$patternArgs
+        } else {
+            # No pipeline input; just call fabric with the additional args
+            fabric --pattern $patternName `$patternArgs
+        }
+    }
+}
+"@
+    # Add the function to the current session
+    Invoke-Expression $functionDefinition
+}
+
+# Define the 'yt' function as well
+function yt {
+    [CmdletBinding()]
+    param(
+        [Parameter()]
+        [Alias("timestamps")]
+        [switch]$t,
+
+        [Parameter(Position = 0, ValueFromPipeline = $true)]
+        [string]$videoLink
+    )
+
+    begin {
+        $transcriptFlag = "--transcript"
+        if ($t) {
+            $transcriptFlag = "--transcript-with-timestamps"
+        }
+    }
+
+    process {
+        if (-not $videoLink) {
+            Write-Error "Usage: yt [-t | --timestamps] youtube-link"
+            return
+        }
+    }
+
+    end {
+        if ($videoLink) {
+            # Execute and allow output to flow through the pipeline
+            fabric -y $videoLink $transcriptFlag
+        }
+    }
+}
+```
 
 This also creates a `yt` alias that allows you to use `yt https://www.youtube.com/watch?v=4b0iet22VIk` to get transcripts, comments, and metadata.
 
@@ -427,7 +407,7 @@ pipx uninstall fabric
 # Clear any old Fabric aliases
 (check your .bashrc, .zshrc, etc.)
 # Install the Go version
-go install github.com/danielmiessler/fabric@latest
+go install github.com/danielmiessler/fabric/cmd/fabric@latest
 # Run setup for the new version. Important because things have changed
 fabric --setup
 ```
@@ -439,7 +419,7 @@ Then [set your environmental variables](#environment-variables) as shown above.
 The great thing about Go is that it's super easy to upgrade. Just run the same command you used to install it in the first place and you'll always get the latest version.
 
 ```bash
-go install github.com/danielmiessler/fabric@latest
+go install github.com/danielmiessler/fabric/cmd/fabric@latest
 ```
 
 ### Shell Completions
@@ -559,10 +539,21 @@ Application Options:
       --search                      Enable web search tool for supported models (Anthropic, OpenAI)
       --search-location=            Set location for web search results (e.g., 'America/Los_Angeles')
       --image-file=                 Save generated image to specified file path (e.g., 'output.png')
+      --image-size=                 Image dimensions: 1024x1024, 1536x1024, 1024x1536, auto (default: auto)
+      --image-quality=              Image quality: low, medium, high, auto (default: auto)
+      --image-compression=          Compression level 0-100 for JPEG/WebP formats (default: not set)
+      --image-background=           Background type: opaque, transparent (default: opaque, only for
+                                    PNG/WebP)
+      --suppress-think              Suppress text enclosed in thinking tags
+      --think-start-tag=            Start tag for thinking sections (default: <think>)
+      --think-end-tag=              End tag for thinking sections (default: </think>)
+      --disable-responses-api       Disable OpenAI Responses API (default: false)
+      --voice=                      TTS voice name for supported models (e.g., Kore, Charon, Puck)
+                                    (default: Kore)
+      --list-gemini-voices          List all available Gemini TTS voices
 
 Help Options:
   -h, --help                        Show this help message
-
 ```
 
 ## Our approach to prompting
@@ -622,7 +613,7 @@ Now let's look at some things you can do with Fabric.
 <br />
 <br />
 
-If you're not looking to do anything fancy, and you just want a lot of great prompts, you can navigate to the [`/patterns`](https://github.com/danielmiessler/fabric/tree/main/patterns) directory and start exploring!
+If you're not looking to do anything fancy, and you just want a lot of great prompts, you can navigate to the [`/patterns`](https://github.com/danielmiessler/fabric/tree/main/data/patterns) directory and start exploring!
 
 We hope that if you used nothing else from Fabric, the Patterns by themselves will make the project useful.
 
@@ -638,7 +629,7 @@ be used in addition to the basic patterns.
 See the [Thinking Faster by Writing Less](https://arxiv.org/pdf/2502.18600) paper and
 the [Thought Generation section of Learn Prompting](https://learnprompting.org/docs/advanced/thought_generation/introduction) for examples of prompt strategies.
 
-Each strategy is available as a small `json` file in the [`/strategies`](https://github.com/danielmiessler/fabric/tree/main/strategies) directory.
+Each strategy is available as a small `json` file in the [`/strategies`](https://github.com/danielmiessler/fabric/tree/main/data/strategies) directory.
 
 The prompt modification of the strategy is applied to the system prompt and passed on to the
 LLM in the chat session.
@@ -649,11 +640,48 @@ Use `fabric -S` and select the option to install the strategies in your `~/.conf
 
 You may want to use Fabric to create your own custom Patterns—but not share them with others. No problem!
 
-Just make a directory in `~/.config/custompatterns/` (or wherever) and put your `.md` files in there.
+Fabric now supports a dedicated custom patterns directory that keeps your personal patterns separate from the built-in ones. This means your custom patterns won't be overwritten when you update Fabric's built-in patterns.
 
-When you're ready to use them, copy them into `~/.config/fabric/patterns/`
+### Setting Up Custom Patterns
 
-You can then use them like any other Patterns, but they won't be public unless you explicitly submit them as Pull Requests to the Fabric project. So don't worry—they're private to you.
+1. Run the Fabric setup:
+
+   ```bash
+   fabric --setup
+   ```
+
+2. Select the "Custom Patterns" option from the Tools menu and enter your desired directory path (e.g., `~/my-custom-patterns`)
+
+3. Fabric will automatically create the directory if it does not exist.
+
+### Using Custom Patterns
+
+1. Create your custom pattern directory structure:
+
+   ```bash
+   mkdir -p ~/my-custom-patterns/my-analyzer
+   ```
+
+2. Create your pattern file
+
+   ```bash
+   echo "You are an expert analyzer of ..." > ~/my-custom-patterns/my-analyzer/system.md
+   ```
+
+3. **Use your custom pattern:**
+
+   ```bash
+   fabric --pattern my-analyzer "analyze this text"
+   ```
+
+### How It Works
+
+- **Priority System**: Custom patterns take precedence over built-in patterns with the same name
+- **Seamless Integration**: Custom patterns appear in `fabric --listpatterns` alongside built-in ones
+- **Update Safe**: Your custom patterns are never affected by `fabric --updatepatterns`
+- **Private by Default**: Custom patterns remain private unless you explicitly share them
+
+Your custom patterns are completely private and won't be affected by Fabric updates!
 
 ## Helper Apps
 
@@ -682,7 +710,7 @@ This will create a PDF file named `output.pdf` in the current directory.
 To install `to_pdf`, install it the same way as you install Fabric, just with a different repo name.
 
 ```bash
-go install github.com/danielmiessler/fabric/plugins/tools/to_pdf@latest
+go install github.com/danielmiessler/fabric/cmd/to_pdf@latest
 ```
 
 Make sure you have a LaTeX distribution (like TeX Live or MiKTeX) installed on your system, as `to_pdf` requires `pdflatex` to be available in your system's PATH.
@@ -693,12 +721,12 @@ Make sure you have a LaTeX distribution (like TeX Live or MiKTeX) installed on y
 It generates a `json` representation of a directory of code that can be fed into an AI model
 with instructions to create a new feature or edit the code in a specified way.
 
-See [the Create Coding Feature Pattern README](./patterns/create_coding_feature/README.md) for details.
+See [the Create Coding Feature Pattern README](./data/patterns/create_coding_feature/README.md) for details.
 
 Install it first using:
 
 ```bash
-go install github.com/danielmiessler/fabric/plugins/tools/code_helper@latest
+go install github.com/danielmiessler/fabric/cmd/code_helper@latest
 ```
 
 ## pbpaste

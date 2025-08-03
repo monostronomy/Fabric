@@ -14,16 +14,19 @@ _fabric_models() {
   models=(${(f)"$(fabric --listmodels --shell-complete-list 2>/dev/null)"})
   compadd -X "Models:" ${models}
 }
+
 _fabric_contexts() {
   local -a contexts
   contexts=(${(f)"$(fabric --listcontexts --shell-complete-list 2>/dev/null)"})
   compadd -X "Contexts:" ${contexts}
 }
+
 _fabric_sessions() {
   local -a sessions
   sessions=(${(f)"$(fabric --listsessions --shell-complete-list 2>/dev/null)"})
   compadd -X "Sessions:" ${sessions}
 }
+
 _fabric_strategies() {
   local -a strategies
   strategies=(${(f)"$(fabric --liststrategies --shell-complete-list 2>/dev/null)"})
@@ -34,14 +37,12 @@ _fabric_extensions() {
   local -a extensions
   extensions=(${(f)"$(fabric --listextensions --shell-complete-list 2>/dev/null)"})
   compadd -X "Extensions:" ${extensions}
-    '(-L --listmodels)'{-L,--listmodels}'[List all available models]:list models:_fabric_models' \
-    '(-x --listcontexts)'{-x,--listcontexts}'[List all contexts]:list contexts:_fabric_contexts' \
-    '(-X --listsessions)'{-X,--listsessions}'[List all sessions]:list sessions:_fabric_sessions' \
-    '(--listextensions)--listextensions[List all registered extensions]' \
-    '(--liststrategies)--liststrategies[List all strategies]:list strategies:_fabric_strategies' \
-    '(--listvendors)--listvendors[List all vendors]' \
-  vendors=(${(f)"$(fabric --listvendors 2>/dev/null)"})
-  compadd -X "Vendors:" ${vendors}
+}
+
+_fabric_gemini_voices() {
+  local -a voices
+  voices=(${(f)"$(fabric --list-gemini-voices --shell-complete-list 2>/dev/null)"})
+  compadd -X "Gemini TTS Voices:" ${voices}
 }
 
 _fabric() {
@@ -98,17 +99,26 @@ _fabric() {
     '(--version)--version[Print current version]' \
     '(--search)--search[Enable web search tool for supported models (Anthropic, OpenAI)]' \
     '(--search-location)--search-location[Set location for web search results]:location:' \
-    '(--image-file)--image-file[Save generated image to specified file path]:image file:_files -g "*.png *.jpg *.jpeg *.gif *.bmp"' \
+    '(--image-file)--image-file[Save generated image to specified file path]:image file:_files -g "*.png *.webp *.jpeg *.jpg"' \
+    '(--image-size)--image-size[Image dimensions]:size:(1024x1024 1536x1024 1024x1536 auto)' \
+    '(--image-quality)--image-quality[Image quality]:quality:(low medium high auto)' \
+    '(--image-compression)--image-compression[Compression level 0-100 for JPEG/WebP formats]:compression:' \
+    '(--image-background)--image-background[Background type]:background:(opaque transparent)' \
     '(--listextensions)--listextensions[List all registered extensions]' \
     '(--addextension)--addextension[Register a new extension from config file path]:config file:_files -g "*.yaml *.yml"' \
     '(--rmextension)--rmextension[Remove a registered extension by name]:extension:_fabric_extensions' \
     '(--strategy)--strategy[Choose a strategy from the available strategies]:strategy:_fabric_strategies' \
     '(--liststrategies)--liststrategies[List all strategies]' \
     '(--listvendors)--listvendors[List all vendors]' \
+    '(--voice)--voice[TTS voice name for supported models]:voice:_fabric_gemini_voices' \
+    '(--list-gemini-voices)--list-gemini-voices[List all available Gemini TTS voices]' \
     '(--shell-complete-list)--shell-complete-list[Output raw list without headers/formatting (for shell completion)]' \
+    '(--suppress-think)--suppress-think[Suppress text enclosed in thinking tags]' \
+    '(--think-start-tag)--think-start-tag[Start tag for thinking sections (default: <think>)]:start tag:' \
+    '(--think-end-tag)--think-end-tag[End tag for thinking sections (default: </think>)]:end tag:' \
+    '(--disable-responses-api)--disable-responses-api[Disable OpenAI Responses API (default: false)]' \
     '(-h --help)'{-h,--help}'[Show this help message]' \
     '*:arguments:'
 }
 
 _fabric "$@"
-
